@@ -4,8 +4,10 @@ use std::str;
 pub struct Config {
     query: String,
     file_path: String,
-    ignore_case: bool
+    ignore_case: bool,
+    using_option: bool
 }
+#[allow(dead_code)]
 impl Config {
     pub fn build(
         mut args: impl Iterator<Item = String>,
@@ -13,22 +15,14 @@ impl Config {
         let mut ignore_case: bool = false;
         let mut using_option: bool = false;
         let mut query = String::from("kek");
+        let mut file_path = String::from("kek");
+
         args.next();
 
         let arg1 = match args.next() {
             Some(arg) => arg.chars().collect::<Vec<char>>(),            
             None => return Err("Didn't get a query string"),
         };
-
-        let arg2 = match args.next() {
-            Some(arg) => arg,
-            None => return Err("Didn't get a file path"),
-        };
-        let arg3 = match args.next() {
-            Some(arg) => arg,
-            None => return Err("Didn't get a file path"),
-        };
-        
         if let Some(first_char) = arg1.get(0) {
             if first_char == &'-' {
                 using_option = true;
@@ -37,24 +31,43 @@ impl Config {
                         ignore_case = true;
                     }
                 }
+                let query = match args.next() {
+                    Some(arg) => arg,
+                    None => return Err("No Search String"),
+                };
+                let file_path = match args.next() {
+                    Some(arg) => arg,
+                    None => return Err("Didn't get a file path"),
+                };
+                
             } else {
                 query = arg1.into_iter().collect();
+                let file_path = match args.next() {
+                    Some(arg) => arg,
+                    None => return Err("Didn't get a file path"),
+                };
             }
         }
         
-        println!("{using_option}");
-        println!("{ignore_case}");
+        
+        
+        
+        
+        
         println!("{}", query);
         let query = String::from("3");
         let file_path = String::from("./test.txt");
         Ok(Config {
             query,
             file_path,
-            ignore_case
+            ignore_case,
+            using_option
         })
     }
     pub fn read(&self) {
-        println!("Query: {} Path: {}", self.query, self.file_path)
+        println!("Options: {}", self.using_option);
+        println!("Ignore Case: {}", self.ignore_case);
+        println!("Query: {} \nPath: {}", self.query, self.file_path)
     }
 }
 
@@ -72,7 +85,7 @@ pub fn print_file_content(file_path: &str) -> String {
     return input;
   
 }
-
+#[allow(dead_code)]
 pub fn print_files() {
     let paths = fs::read_dir("./").unwrap();
 
