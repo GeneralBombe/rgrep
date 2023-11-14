@@ -6,7 +6,7 @@ pub struct Config {
     file_path: String,
     ignore_case: bool,
     using_option: bool,
-    use_recusion: bool
+    use_recursion: bool
 }
 #[allow(dead_code)]
 impl Config {
@@ -15,10 +15,10 @@ impl Config {
     ) -> Result<Config, &'static str> {
         let mut ignore_case: bool = false;
         let mut using_option: bool = false;
-        let mut use_recusion: bool = false;
+        let mut use_recursion: bool = false;
 
         let mut query = String::from("kek");
-        let _file_path = String::from("kek");
+        let mut file_path = String::from("./");
 
         args.next();
 
@@ -34,24 +34,29 @@ impl Config {
                         ignore_case = true;
                     }
                     if c == 'r' {
-                        use_recusion = true;
+                        use_recursion = true;
                     }
                 }
-                let _query = match args.next() {
+                query = match args.next() {
                     Some(arg) => arg,
                     None => return Err("No Search String"),
                 };
-                if use_recusion == false {
+                if use_recursion == false {
                     let _file_path = match args.next() {
                         Some(arg) => arg,
                         None => return Err("Didn't get a file path"),
+                    };
+                } else {
+                    file_path = match args.next() {
+                        Some(arg) => arg,
+                        None =>  String::from("./")
                     };
                 }
                 
                 
             } else {
                 query = arg1.into_iter().collect();
-                let _file_path = match args.next() {
+                file_path = match args.next() {
                     Some(arg) => arg,
                     None => return Err("Didn't get a file path"),
                 };
@@ -63,23 +68,42 @@ impl Config {
         
         
         
-        println!("{}", query);
-        let query = String::from("3");
-        let file_path = String::from("./test.txt");
+        
         Ok(Config {
             query,
             file_path,
             ignore_case,
             using_option,
-            use_recusion
+            use_recursion
         })
     }
     pub fn read(&self) {
         println!("Options: {}", self.using_option);
         println!("Ignore Case: {}", self.ignore_case);
-        println!("Use recusion: {}", self.use_recusion);
+        println!("Use recusion: {}", self.use_recursion);
         println!("Query: {} \nPath: {}", self.query, self.file_path)
     }
+    
+    pub fn get_query(&self) -> &str {
+        &self.query
+    }
+
+    pub fn get_file_path(&self) -> &str {
+        &self.file_path
+    }
+
+    pub fn get_ignore_case(&self) -> bool {
+        self.ignore_case
+    }
+
+    pub fn get_using_option(&self) -> bool {
+        self.using_option
+    }
+
+    pub fn get_use_recursion(&self) -> bool {
+        self.use_recursion
+    }
+    
 }
 
 pub fn read_file(config: Config) -> Result<(), Box<dyn Error>> {
@@ -113,12 +137,17 @@ pub fn print_files_t(input_path: Option<String>, config: &Config) -> Result<(), 
         Some(the_path) => the_path,
         None => String::from("./"),
     };
-
     let paths = fs::read_dir(path)?;
+    /*for path in paths {
+        if let Ok(entry) = path {
+            println!("{:?}", entry.path());
+        }
+    } */
     
     for path in paths {
         if let Ok(entry) = path {
             let metadata = fs::metadata(entry.path());
+            //println!("{:?}", entry.path());
             if let Ok(meta) = metadata {
                 let new_dir = entry.path().display().to_string();
                 //println!("Name: {}", new_dir);
@@ -133,21 +162,22 @@ pub fn print_files_t(input_path: Option<String>, config: &Config) -> Result<(), 
                 println!("Failed to get metadata for {:?}", entry.path());
             }
         }
-    }
+    } 
     Ok(()) // Return Ok(()) at the end of the function
 }
 
 
 pub fn search_string<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    //println!("Search called");
-
-    contents.lines().filter(|line| line.contains(query)).collect()
+    contents
+        .lines()
+        .filter(|line| line.contains(query))
+        .collect()
 }
 
 
 pub fn run(config: &Config, c_path: &String) -> Result<(), Box<dyn Error>> {
     let contents = print_file_content(&c_path);
-
+    //println!("{}", contents);
     for line in search_string(&config.query, &contents) {
         println!("{c_path}:");
         println!("{line}");

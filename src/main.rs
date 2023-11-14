@@ -6,7 +6,18 @@ fn main() {
         eprintln!("Problem parsing arguments: {}", err); // Changed {err} to {} within the string
         std::process::exit(1);
     });
-    config.read();
+    //config.read();
+    let recursion = config.get_use_recursion();
+    if recursion {
+      let f_p: String = config.get_file_path().to_string();
+      if let Err(e) = rgrep::print_files_t(Some(f_p), &config) {
+        println!("Error: {}", e); // Changed {e} to {} within the string
+      }
+
+    } else {
+      println!("Else");
+    }
+    
     //if let Err(e) = rgrep::print_files_t(None, &config) {
       //  eprint!("Error: {}", e); // Changed {e} to {} within the string
     //}
