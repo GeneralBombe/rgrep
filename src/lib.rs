@@ -115,10 +115,14 @@ pub fn read_file(config: Config) -> Result<(), Box<dyn Error>> {
 }
 
 
-pub fn print_file_content(file_path: &str) -> String {
+pub fn print_file_content(file_path: &str, config: &Config) -> String {
     let byte_vec = fs::read(file_path).expect("geht nicht");
     let input = String::from_utf8_lossy(&byte_vec).to_string();
-    return input;
+    if config.ignore_case == true {
+        return input.to_lowercase();
+    } else {
+        return input;
+    }
   
 }
 #[allow(dead_code)]
@@ -168,22 +172,40 @@ pub fn print_files_t(input_path: Option<String>, config: &Config) -> Result<(), 
 }
 
 
-pub fn search_string<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+pub fn search_string<'a>(query: &str, contents: &'a str, ignore_case: bool) -> Vec<&'a str> {
+    let new_query: String;
+    if ignore_case {
+        new_query = query.to_lowercase();
+    } else {
+        new_query = String::from(query);
+    }
+
     contents
         .lines()
-        .filter(|line| line.contains(query))
+        .filter(|line| {
+            if ignore_case {
+                line.to_lowercase().contains(&new_query)
+            } else {
+                line.contains(&new_query)
+            }
+        })
         .collect()
+
 }
-fn colorize_word_in_string(word: &str, input_string: &str) -> String {
-    input_string.replace(word, &format!("{color_green}{}{color_reset}",word))
+fn colorize_word_in_string(word: &str, input_string: &str, lowercase: bool) -> String {
+    let mut replace_word = word.to_string();
+    if lowercase {
+        replace_word = word.to_lowercase();
+    }
+    input_string.replace(&replace_word, &format!("{color_green}{}{color_reset}",replace_word))
 }
 
 
 pub fn run(config: &Config, c_path: &String) -> Result<(), Box<dyn Error>> {
-    let contents = print_file_content(&c_path);
+    let contents = print_file_content(&c_path, &config);
     //println!("{}", contents);
-    for lineout in search_string(&config.query, &contents) {
-        let line = colorize_word_in_string(&config.get_query(), lineout);
+    for lineout in search_string(&config.query, &contents, config.ignore_case) {
+        let line = colorize_word_in_string(&config.get_query(), lineout, config.get_ignore_case());
         print!("{color_red}{c_path}{color_cyan}:{color_reset}");
         println!("{line}");
     }
