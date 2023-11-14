@@ -5,7 +5,8 @@ pub struct Config {
     query: String,
     file_path: String,
     ignore_case: bool,
-    using_option: bool
+    using_option: bool,
+    use_recusion: bool
 }
 #[allow(dead_code)]
 impl Config {
@@ -14,8 +15,10 @@ impl Config {
     ) -> Result<Config, &'static str> {
         let mut ignore_case: bool = false;
         let mut using_option: bool = false;
+        let mut use_recusion: bool = false;
+
         let mut query = String::from("kek");
-        let mut file_path = String::from("kek");
+        let _file_path = String::from("kek");
 
         args.next();
 
@@ -30,19 +33,25 @@ impl Config {
                     if c == 'i' {
                         ignore_case = true;
                     }
+                    if c == 'r' {
+                        use_recusion = true;
+                    }
                 }
-                let query = match args.next() {
+                let _query = match args.next() {
                     Some(arg) => arg,
                     None => return Err("No Search String"),
                 };
-                let file_path = match args.next() {
-                    Some(arg) => arg,
-                    None => return Err("Didn't get a file path"),
-                };
+                if use_recusion == false {
+                    let _file_path = match args.next() {
+                        Some(arg) => arg,
+                        None => return Err("Didn't get a file path"),
+                    };
+                }
+                
                 
             } else {
                 query = arg1.into_iter().collect();
-                let file_path = match args.next() {
+                let _file_path = match args.next() {
                     Some(arg) => arg,
                     None => return Err("Didn't get a file path"),
                 };
@@ -61,12 +70,14 @@ impl Config {
             query,
             file_path,
             ignore_case,
-            using_option
+            using_option,
+            use_recusion
         })
     }
     pub fn read(&self) {
         println!("Options: {}", self.using_option);
         println!("Ignore Case: {}", self.ignore_case);
+        println!("Use recusion: {}", self.use_recusion);
         println!("Query: {} \nPath: {}", self.query, self.file_path)
     }
 }
@@ -89,7 +100,7 @@ pub fn print_file_content(file_path: &str) -> String {
 pub fn print_files() {
     let paths = fs::read_dir("./").unwrap();
 
-    for path in paths {
+    for _path in paths {
        // println!("Name: {}", path.unwrap().path().display())
     }
 }
