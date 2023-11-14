@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::fs;
 use std::str;
+use inline_colorization::*;
 pub struct Config {
     query: String,
     file_path: String,
@@ -173,13 +174,17 @@ pub fn search_string<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
         .filter(|line| line.contains(query))
         .collect()
 }
+fn colorize_word_in_string(word: &str, input_string: &str) -> String {
+    input_string.replace(word, &format!("{color_green}{}{color_reset}",word))
+}
 
 
 pub fn run(config: &Config, c_path: &String) -> Result<(), Box<dyn Error>> {
     let contents = print_file_content(&c_path);
     //println!("{}", contents);
-    for line in search_string(&config.query, &contents) {
-        println!("{c_path}:");
+    for lineout in search_string(&config.query, &contents) {
+        let line = colorize_word_in_string(&config.get_query(), lineout);
+        print!("{color_red}{c_path}{color_cyan}:{color_reset}");
         println!("{line}");
     }
 
