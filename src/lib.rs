@@ -43,11 +43,12 @@ impl Config {
                     None => return Err("No Search String"),
                 };
                 if use_recursion == false {
-                    let _file_path = match args.next() {
+                    file_path = match args.next() {
                         Some(arg) => arg,
                         None => return Err("Didn't get a file path"),
                     };
                 } else {
+                    println!("jdsaiudh");
                     file_path = match args.next() {
                         Some(arg) => arg,
                         None =>  String::from("./")
