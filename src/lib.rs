@@ -2,6 +2,8 @@ use std::error::Error;
 use std::fs;
 use std::str;
 use inline_colorization::*;
+use std::io::{self, Write};
+use std::borrow::Cow;
 pub struct Config {
     query: String,
     file_path: String,
@@ -194,21 +196,25 @@ pub fn search_string<'a>(query: &str, contents: &'a str, ignore_case: bool) -> V
 
 }
 fn colorize_word_in_string(word: &str, input_string: &str, lowercase: bool) -> String {
-    let mut replace_word = word.to_string();
-    if lowercase {
-        replace_word = word.to_lowercase();
-    }
-    input_string.replace(&replace_word, &format!("{color_green}{}{color_reset}",replace_word))
+    let replace_word: Cow<str> = if lowercase {
+        Cow::Owned(word.to_lowercase())
+    } else {
+        Cow::Borrowed(word)
+    };
+
+    input_string.replace(word, &format!("{color_green}{}{color_reset}", replace_word))
 }
 
 
 pub fn run(config: &Config, c_path: &String) -> Result<(), Box<dyn Error>> {
+    let _ = io::stdout().flush();
     let contents = print_file_content(&c_path, &config);
     //println!("{}", contents);
     for lineout in search_string(&config.query, &contents, config.ignore_case) {
         let line = colorize_word_in_string(&config.get_query(), lineout, config.get_ignore_case());
         print!("{color_red}{c_path}{color_cyan}:{color_reset}");
         println!("{line}");
+        let _ = io::stdout().flush();
     }
 
     Ok(())
